@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PuzzleForge — Setup Your Puzzle</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0a0a0a; --surface: #111111; --surface2: #161616;
+  --border: rgba(255,255,255,0.08); --text: #f0ece4;
+  --muted: rgba(240,236,228,0.45); --accent: #e8c547;
+}
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.2rem 4rem;
+  background: rgba(10,10,10,0.95); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: var(--accent); text-decoration: none; }
+.nav-back { color: var(--muted); text-decoration: none; font-size: 0.85rem; letter-spacing: 0.05em; transition: color 0.3s; }
+.nav-back:hover { color: var(--text); }
+
+/* LAYOUT */
+.page { max-width: 760px; margin: 0 auto; padding: 3rem 2rem 6rem; }
+
+/* PROGRESS */
+.progress-bar {
+  display: flex; gap: 0; margin-bottom: 3rem;
+  border: 1px solid var(--border);
+}
+.progress-step {
+  flex: 1; padding: 0.75rem 1rem; font-size: 0.75rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted); text-align: center;
+  border-right: 1px solid var(--border);
+  transition: all 0.3s; position: relative;
+}
+.progress-step:last-child { border-right: none; }
+.progress-step.active { color: var(--accent); background: rgba(232,197,71,0.05); }
+.progress-step.done { color: var(--muted); }
+.progress-step.done::after {
+  content: '✓'; position: absolute; right: 0.75rem; top: 50%;
+  transform: translateY(-50%); color: var(--accent); font-size: 0.7rem;
+}
+
+/* SECTION */
+.setup-section { margin-bottom: 3rem; }
+.setup-section-header { margin-bottom: 1.5rem; }
+.step-label { font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.4rem; }
+.step-title { font-family: 'DM Serif Display', serif; font-size: 1.6rem; letter-spacing: -0.02em; }
+.step-desc { color: var(--muted); font-size: 0.9rem; margin-top: 0.4rem; line-height: 1.6; }
+
+/* PHOTO UPLOAD GRID */
+.photo-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; }
+
+.photo-slot {
+  aspect-ratio: 1; border: 1px dashed rgba(232,197,71,0.25);
+  background: var(--surface); position: relative;
+  cursor: pointer; transition: all 0.3s; overflow: hidden;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.photo-slot:hover { border-color: rgba(232,197,71,0.5); background: var(--surface2); }
+.photo-slot.has-photo { border-style: solid; border-color: rgba(232,197,71,0.4); cursor: default; }
+
+.photo-slot img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; display: none;
+}
+.photo-slot.has-photo img { display: block; }
+
+.slot-icon { font-size: 1.2rem; opacity: 0.4; margin-bottom: 0.3rem; transition: opacity 0.3s; }
+.photo-slot:hover .slot-icon { opacity: 0.7; }
+.slot-num { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.1em; }
+.photo-slot.has-photo .slot-icon,
+.photo-slot.has-photo .slot-num { display: none; }
+
+.slot-remove {
+  position: absolute; top: 4px; right: 4px;
+  width: 20px; height: 20px; background: rgba(0,0,0,0.7);
+  border: none; color: var(--text); font-size: 0.7rem;
+  cursor: pointer; display: none; align-items: center; justify-content: center;
+  transition: background 0.2s; z-index: 2;
+}
+.photo-slot.has-photo .slot-remove { display: flex; }
+.slot-remove:hover { background: rgba(200,50,50,0.8); }
+
+.photo-slot input[type="file"] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; z-index: 1;
+}
+.photo-slot.has-photo input[type="file"] { display: none; }
+
+/* Upload note */
+.upload-note {
+  margin-top: 0.75rem; font-size: 0.8rem; color: var(--muted);
+  display: flex; align-items: center; gap: 0.4rem;
+}
+
+/* CAPTIONS */
+.captions-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.caption-item {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 0.75rem 1rem; background: var(--surface);
+  border: 1px solid var(--border);
+}
+.caption-thumb {
+  width: 44px; height: 44px; object-fit: cover;
+  border: 1px solid var(--border); flex-shrink: 0;
+  filter: brightness(0.8);
+}
+.caption-num { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.1em; flex-shrink: 0; }
+.caption-input {
+  flex: 1; background: transparent; border: none;
+  color: var(--text); font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem; outline: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s; padding-bottom: 2px;
+}
+.caption-input:focus { border-bottom-color: var(--accent); }
+.caption-input::placeholder { color: rgba(240,236,228,0.2); }
+
+/* THEME PICKER */
+.theme-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; }
+.theme-card {
+  padding: 1.2rem 1rem; border: 1px solid var(--border);
+  background: var(--surface); cursor: pointer;
+  transition: all 0.3s; text-align: center; position: relative;
+}
+.theme-card:hover { border-color: rgba(255,255,255,0.2); background: var(--surface2); }
+.theme-card.selected { border-color: var(--accent); background: rgba(232,197,71,0.05); }
+.theme-card.selected::after {
+  content: '✓'; position: absolute; top: 0.5rem; right: 0.6rem;
+  font-size: 0.7rem; color: var(--accent);
+}
+.theme-swatch {
+  width: 100%; height: 40px; margin-bottom: 0.75rem;
+  border-radius: 2px; position: relative; overflow: hidden;
+}
+.theme-name { font-size: 0.85rem; font-weight: 500; margin-bottom: 0.2rem; }
+.theme-desc { font-size: 0.7rem; color: var(--muted); }
+
+/* DIFFICULTY */
+.diff-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+.diff-card {
+  padding: 1.5rem 1rem; border: 1px solid var(--border);
+  background: var(--surface); cursor: pointer;
+  transition: all 0.3s; text-align: center; position: relative;
+}
+.diff-card:hover { background: var(--surface2); }
+.diff-card.selected { border-color: var(--accent); background: rgba(232,197,71,0.05); }
+.diff-card.selected::after { content: '✓'; position: absolute; top: 0.5rem; right: 0.6rem; font-size: 0.7rem; color: var(--accent); }
+.diff-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+.diff-name { font-family: 'DM Serif Display', serif; font-size: 1.1rem; margin-bottom: 0.3rem; }
+.diff-detail { font-size: 0.75rem; color: var(--muted); }
+
+/* DIVIDER */
+.section-divider { height: 1px; background: var(--border); margin: 2.5rem 0; }
+
+/* PLAY BUTTON */
+.play-section { margin-top: 3rem; }
+.play-btn {
+  width: 100%; padding: 1.2rem;
+  background: var(--accent); color: #0a0a0a;
+  font-family: 'DM Serif Display', serif; font-size: 1.3rem;
+  border: none; cursor: pointer; transition: all 0.3s;
+  letter-spacing: -0.01em; position: relative; overflow: hidden;
+}
+.play-btn:hover { background: #fff; transform: translateY(-2px); box-shadow: 0 15px 40px rgba(0,0,0,0.4); }
+.play-btn:disabled { background: var(--surface); color: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
+.play-hint { text-align: center; margin-top: 0.75rem; font-size: 0.8rem; color: var(--muted); }
+
+/* VALIDATION */
+.validation-msg {
+  margin-top: 0.5rem; font-size: 0.8rem; color: #d44c3a;
+  display: none;
+}
+.validation-msg.show { display: block; }
+
+@media (max-width: 600px) {
+  nav { padding: 1rem 1.5rem; }
+  .page { padding: 2rem 1rem 5rem; }
+  .photo-grid { grid-template-columns: repeat(5, 1fr); gap: 0.5rem; }
+  .theme-grid { grid-template-columns: repeat(2, 1fr); }
+  .diff-grid { grid-template-columns: repeat(3, 1fr); }
+  .progress-step { font-size: 0.6rem; padding: 0.6rem 0.3rem; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-back">← Back</a>
+  <a href="index.html" class="nav-logo">PuzzleForge</a>
+  <div style="width:60px"></div>
+</nav>
+
+<div class="page">
+
+  <!-- Progress -->
+  <div class="progress-bar">
+    <div class="progress-step active" id="prog-1">Photos</div>
+    <div class="progress-step" id="prog-2">Captions</div>
+    <div class="progress-step" id="prog-3">Theme</div>
+    <div class="progress-step" id="prog-4">Difficulty</div>
+  </div>
+
+  <!-- STEP 1: PHOTOS -->
+  <div class="setup-section">
+    <div class="setup-section-header">
+      <div class="step-label">Step 01</div>
+      <div class="step-title">Upload Your Photos</div>
+      <div class="step-desc">Choose 1 to 5 photos. Each photo becomes one puzzle level.</div>
+    </div>
+
+    <div class="photo-grid" id="photo-grid">
+      <!-- Generated by JS -->
+    </div>
+
+    <div class="upload-note">
+      <span>📎</span> JPG, PNG supported · Photos stay on your device
+    </div>
+    <div class="validation-msg" id="photo-validation">Please upload at least one photo to continue.</div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- STEP 2: CAPTIONS -->
+  <div class="setup-section">
+    <div class="setup-section-header">
+      <div class="step-label">Step 02</div>
+      <div class="step-title">Add Captions</div>
+      <div class="step-desc">Give each photo a caption — a date, a place, a memory. Shown when you complete each puzzle.</div>
+    </div>
+    <div class="captions-list" id="captions-list">
+      <div style="color:var(--muted);font-size:0.9rem;font-style:italic;padding:1rem 0">
+        Upload photos above to add captions
+      </div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- STEP 3: THEME -->
+  <div class="setup-section">
+    <div class="setup-section-header">
+      <div class="step-label">Step 03</div>
+      <div class="step-title">Pick Your Theme</div>
+      <div class="step-desc">Choose a color theme that sets the mood for your puzzle.</div>
+    </div>
+    <div class="theme-grid">
+      <div class="theme-card selected" data-theme="romance" onclick="selectTheme(this)">
+        <div class="theme-swatch" style="background:linear-gradient(135deg,#8B0000,#C41E3A,#CFB53B)"></div>
+        <div class="theme-name">Romance</div>
+        <div class="theme-desc">Crimson & Gold</div>
+      </div>
+      <div class="theme-card" data-theme="ocean" onclick="selectTheme(this)">
+        <div class="theme-swatch" style="background:linear-gradient(135deg,#0a1628,#1a3a5c,#00b4d8)"></div>
+        <div class="theme-name">Ocean</div>
+        <div class="theme-desc">Navy & Cyan</div>
+      </div>
+      <div class="theme-card" data-theme="nature" onclick="selectTheme(this)">
+        <div class="theme-swatch" style="background:linear-gradient(135deg,#0a1a0a,#1a3a1a,#52b788)"></div>
+        <div class="theme-name">Nature</div>
+        <div class="theme-desc">Forest & Mint</div>
+      </div>
+      <div class="theme-card" data-theme="midnight" onclick="selectTheme(this)">
+        <div class="theme-swatch" style="background:linear-gradient(135deg,#0d0a1a,#1a1040,#7c3aed)"></div>
+        <div class="theme-name">Midnight</div>
+        <div class="theme-desc">Deep & Lavender</div>
+      </div>
+      <div class="theme-card" data-theme="minimal" onclick="selectTheme(this)">
+        <div class="theme-swatch" style="background:linear-gradient(135deg,#111,#333,#888)"></div>
+        <div class="theme-name">Minimal</div>
+        <div class="theme-desc">Black & White</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- STEP 4: DIFFICULTY -->
+  <div class="setup-section">
+    <div class="setup-section-header">
+      <div class="step-label">Step 04</div>
+      <div class="step-title">Choose Difficulty</div>
+      <div class="step-desc">How many pieces do you want to solve?</div>
+    </div>
+    <div class="diff-grid">
+      <div class="diff-card" data-diff="2" onclick="selectDiff(this)">
+        <div class="diff-icon">🌱</div>
+        <div class="diff-name">Easy</div>
+        <div class="diff-detail">2×2 · 4 pieces</div>
+      </div>
+      <div class="diff-card selected" data-diff="3" onclick="selectDiff(this)">
+        <div class="diff-icon">⚡</div>
+        <div class="diff-name">Medium</div>
+        <div class="diff-detail">3×3 · 9 pieces</div>
+      </div>
+      <div class="diff-card" data-diff="4" onclick="selectDiff(this)">
+        <div class="diff-icon">🔥</div>
+        <div class="diff-name">Hard</div>
+        <div class="diff-detail">4×4 · 16 pieces</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAY -->
+  <div class="play-section">
+    <button class="play-btn" id="play-btn" onclick="startPuzzle()">
+      Let's Play →
+    </button>
+    <div class="play-hint" id="play-hint">Upload at least one photo to start</div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+const MAX_PHOTOS = 5;
+let photos = []; // { dataUrl, caption }
+let selectedTheme = 'romance';
+let selectedDiff = 3;
+
+// ============================================================
+// PHOTO SLOTS
+// ============================================================
+function buildPhotoGrid() {
+  const grid = document.getElementById('photo-grid');
+  grid.innerHTML = '';
+  for (let i = 0; i < MAX_PHOTOS; i++) {
+    const slot = document.createElement('div');
+    slot.className = 'photo-slot' + (photos[i] ? ' has-photo' : '');
+    slot.dataset.index = i;
+    slot.innerHTML = `
+      <img src="${photos[i]?.dataUrl || ''}" alt="">
+      <button class="slot-remove" onclick="removePhoto(${i}, event)">✕</button>
+      <div class="slot-icon">+</div>
+      <div class="slot-num">Photo ${i + 1}</div>
+      <input type="file" accept="image/*" onchange="handleFile(${i}, event)">
+    `;
+    grid.appendChild(slot);
+  }
+}
+
+function handleFile(index, e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    photos[index] = { dataUrl: ev.target.result, caption: photos[index]?.caption || '' };
+    // Fill in any gaps
+    photos = photos.filter(Boolean);
+    // Reindex
+    buildPhotoGrid();
+    buildCaptions();
+    updateProgress();
+    updatePlayBtn();
+  };
+  reader.readAsDataURL(file);
+}
+
+function removePhoto(index, e) {
+  e.stopPropagation();
+  photos.splice(index, 1);
+  buildPhotoGrid();
+  buildCaptions();
+  updateProgress();
+  updatePlayBtn();
+}
+
+// ============================================================
+// CAPTIONS
+// ============================================================
+function buildCaptions() {
+  const list = document.getElementById('captions-list');
+  if (photos.length === 0) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:0.9rem;font-style:italic;padding:1rem 0">Upload photos above to add captions</div>';
+    return;
+  }
+  list.innerHTML = '';
+  photos.forEach((p, i) => {
+    const item = document.createElement('div');
+    item.className = 'caption-item';
+    item.innerHTML = `
+      <img class="caption-thumb" src="${p.dataUrl}" alt="">
+      <span class="caption-num">0${i+1}</span>
+      <input class="caption-input" type="text" placeholder="Add a caption... (optional)"
+        value="${p.caption || ''}"
+        oninput="updateCaption(${i}, this.value)">
+    `;
+    list.appendChild(item);
+  });
+}
+
+function updateCaption(index, value) {
+  if (photos[index]) photos[index].caption = value;
+}
+
+// ============================================================
+// THEME
+// ============================================================
+function selectTheme(card) {
+  document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  selectedTheme = card.dataset.theme;
+}
+
+// ============================================================
+// DIFFICULTY
+// ============================================================
+function selectDiff(card) {
+  document.querySelectorAll('.diff-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  selectedDiff = parseInt(card.dataset.diff);
+}
+
+// ============================================================
+// PROGRESS
+// ============================================================
+function updateProgress() {
+  const steps = ['prog-1', 'prog-2', 'prog-3', 'prog-4'];
+  steps.forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.classList.remove('active', 'done');
+    if (photos.length > 0 && i < 3) el.classList.add('done');
+    if (i === 3) el.classList.add('active');
+    if (photos.length === 0) {
+      if (i === 0) el.classList.add('active');
+    }
+  });
+}
+
+// ============================================================
+// PLAY BUTTON
+// ============================================================
+function updatePlayBtn() {
+  const btn = document.getElementById('play-btn');
+  const hint = document.getElementById('play-hint');
+  const validation = document.getElementById('photo-validation');
+
+  if (photos.length === 0) {
+    btn.disabled = true;
+    hint.textContent = 'Upload at least one photo to start';
+    validation.classList.remove('show');
+  } else {
+    btn.disabled = false;
+    hint.textContent = `${photos.length} photo${photos.length > 1 ? 's' : ''} · ${selectedDiff}×${selectedDiff} grid · ${selectedTheme} theme`;
+    validation.classList.remove('show');
+  }
+}
+
+// ============================================================
+// START PUZZLE
+// ============================================================
+function startPuzzle() {
+  if (photos.length === 0) {
+    document.getElementById('photo-validation').classList.add('show');
+    return;
+  }
+
+  // Save to localStorage
+  const puzzleData = {
+    photos: photos.map(p => ({ dataUrl: p.dataUrl, caption: p.caption || '' })),
+    theme: selectedTheme,
+    gridSize: selectedDiff,
+    photoCount: photos.length,
+    currentIndex: 0,
+  };
+
+  try {
+    localStorage.setItem('puzzleData', JSON.stringify(puzzleData));
+    window.location.href = 'puzzle.html';
+  } catch(e) {
+    // localStorage might be full (large images)
+    alert('Photos are too large for storage. Please use smaller images (under 2MB each).');
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+buildPhotoGrid();
+buildCaptions();
+updatePlayBtn();
+</script>
+</body>
+</html>
