@@ -10,8 +10,6 @@
 
 Photo Puzzle is a browser-based jigsaw puzzle game where users upload their own photos and play them as puzzles. Everything runs locally in the browser — no backend, no uploads, no accounts required.
 
-Built as a portfolio project to demonstrate frontend web development skills including Canvas API, CSS theming, localStorage, and responsive design.
-
 ---
 
 ## 🚀 Live Demo
