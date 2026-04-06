@@ -14,7 +14,7 @@ Photo Puzzle is a browser-based jigsaw puzzle game where users upload their own 
 
 ## 🚀 Live Demo
 
-👉 **[https://bherduran.github.io/photopuzzle/](https://photopuzzle.vercel.app/)**
+👉 **[https://photopuzzle.vercel.app/](https://photopuzzle.vercel.app/)**
 
 ---
 
